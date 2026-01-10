@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.zenflow.controller.HistoryController" spacing="15" alignment="CENTER">
+    <children>
+        <Label text="History" style="-fx-font-size: 22px; -fx-font-weight: bold;" />
+
+        <TableView fx:id="table" prefWidth="700">
+            <columns>
+                <TableColumn fx:id="colDate" text="Date" prefWidth="120"/>
+                <TableColumn fx:id="colStart" text="Start Time" prefWidth="180"/>
+                <TableColumn fx:id="colEnd" text="End Time" prefWidth="180"/>
+                <TableColumn fx:id="colCompleted" text="Completed" prefWidth="120"/>
+            </columns>
+        </TableView>
+    </children>
+</VBox>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.zenflow.controller.AdminController" spacing="10">
+    <padding>
+        <Insets top="12" right="12" bottom="12" left="12" />
+    </padding>
+    <Label text="Admin - Manage Users" style="-fx-font-weight:bold; -fx-font-size:14px;"/>
+    <HBox spacing="8">
+        <ListView fx:id="usersList" prefWidth="200" prefHeight="220"/>
+        <VBox spacing="8">
+            <Label text="New user"/>
+            <TextField fx:id="newUserField" promptText="username"/>
+            <PasswordField fx:id="newPassField" promptText="password"/>
+            <Button text="Add User" onAction="#addUser"/>
+            <Separator/>
+            <Label text="Selected user actions"/>
+            <PasswordField fx:id="changePassField" promptText="new password"/>
+            <HBox spacing="8">
+                <Button text="Change Password" onAction="#changePassword"/>
+                <Button text="Delete User" onAction="#deleteUser"/>
+            </HBox>
+            <CheckBox fx:id="adminCheckbox" text="Is admin" onAction="#toggleAdmin" />
+        </VBox>
+    </HBox>
+    <Label fx:id="statusLabel" style="-fx-text-fill:green;"/>
+</VBox>

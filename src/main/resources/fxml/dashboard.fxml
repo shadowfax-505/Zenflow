@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="CENTER" prefWidth="800" spacing="20" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.zenflow.controller.DashboardController">
+    <children>
+        <Label style="-fx-font-size: 22px; -fx-font-weight: bold;" text="Dashboard" />
+
+        <HBox alignment="CENTER" spacing="40">
+            <VBox alignment="CENTER">
+                <Label text="Total Time Today" />
+                <Label fx:id="totalTimeLabel" style="-fx-font-size: 18px;" text="--" />
+            </VBox>
+            <VBox alignment="CENTER">
+                <Label text="Sessions" />
+                <Label fx:id="sessionCountLabel" style="-fx-font-size: 18px;" text="--" />
+            </VBox>
+            <VBox alignment="CENTER">
+                <Label text="Streak" />
+                <Label fx:id="streakLabel" style="-fx-font-size: 18px;" text="--" />
+            </VBox>
+        </HBox>
+
+        <HBox alignment="CENTER" spacing="30">
+            <BarChart fx:id="hourlyChart" prefHeight="300.0" prefWidth="802.0">
+                <xAxis><CategoryAxis label="Hour" /></xAxis>
+                <yAxis><NumberAxis label="Minutes" upperBound="60.0" /></yAxis>
+            </BarChart>
+
+            <PieChart fx:id="appPieChart" prefHeight="300" prefWidth="300" />
+        </HBox>
+    </children>
+</VBox>

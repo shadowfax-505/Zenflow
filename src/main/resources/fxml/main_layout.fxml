@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.zenflow.controller.MainLayoutController">
+    <top>
+        <ToolBar>
+            <Button text="Timer" onAction="#showTimer"/>
+            <Button text="Dashboard" onAction="#showDashboard"/>
+            <Button text="History" onAction="#showHistory"/>
+            <Button text="Settings" onAction="#showSettings"/>
+            <Region fx:id="spacer" HBox.hgrow="ALWAYS"/>
+            <Label text="ZenFlow" style="-fx-font-weight:bold;"/>
+        </ToolBar>
+    </top>
+
+    <center>
+        <StackPane fx:id="contentPane"/>
+    </center>
+</BorderPane>
