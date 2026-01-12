@@ -62,7 +62,7 @@ public class OveruseService {
                 case OTHER -> otherOver;
             };
             if (include) {
-                report.getOverusedAppsMinutes().put(app, minutes);
+                report.put(app, minutes, cat);
             }
         }
 
@@ -80,7 +80,7 @@ public class OveruseService {
         }
     }
 
-    private OveruseCategory categorize(String app) {
+    OveruseCategory categorize(String app) {
         String a = app.toLowerCase(Locale.ROOT);
 
         // Social

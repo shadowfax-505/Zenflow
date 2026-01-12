@@ -1,10 +1,13 @@
 package com.zenflow.controller;
 
 import com.zenflow.service.AnalyticsService;
+import com.zenflow.service.OveruseCategory;
 import com.zenflow.service.OveruseReport;
 import com.zenflow.service.OveruseService;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.PieChart;
@@ -32,10 +35,22 @@ public class DashboardController {
     private final OveruseService overuseService = new OveruseService();
     private Timeline refreshTimeline;
 
+    // Fixed palette used for deterministic pie slice colors.
+    private static final String[] PIE_PALETTE = new String[] {
+            "#6ab0ff", "#a78bfa", "#34d399", "#fbbf24", "#f87171", "#60a5fa",
+            "#fb7185", "#22c55e", "#f97316", "#38bdf8", "#c084fc", "#eab308"
+    };
+
     @FXML
     public void initialize() {
+        // Make sure colors stay stable even as data nodes are created asynchronously by JavaFX.
+        if (appPieChart != null) {
+            appPieChart.getData().addListener((ListChangeListener<PieChart.Data>) c ->
+                    Platform.runLater(this::applyStablePieColors));
+        }
+
         refreshDashboard();
-        refreshTimeline = new Timeline(new KeyFrame(Duration.seconds(30), e -> refreshDashboard()));
+        refreshTimeline = new Timeline(new KeyFrame(Duration.minutes(1), e -> refreshDashboard()));
         refreshTimeline.setCycleCount(Timeline.INDEFINITE);
         refreshTimeline.play();
     }
@@ -73,7 +88,24 @@ public class DashboardController {
             appPieChart.getData().add(new PieChart.Data("No data", 1));
         }
 
+        // Ensure colors are consistent after refresh.
+        Platform.runLater(this::applyStablePieColors);
+
         refreshOveruse();
+    }
+
+    private void applyStablePieColors() {
+        if (appPieChart == null) return;
+        for (PieChart.Data d : appPieChart.getData()) {
+            if (d == null) continue;
+            String name = d.getName() == null ? "" : d.getName();
+            int idx = Math.floorMod(name.hashCode(), PIE_PALETTE.length);
+            String color = PIE_PALETTE[idx];
+
+            if (d.getNode() != null) {
+                d.getNode().setStyle("-fx-pie-color: " + color + ";");
+            }
+        }
     }
 
     private void refreshOveruse() {
@@ -89,7 +121,8 @@ public class DashboardController {
         }
 
         for (Map.Entry<String, Integer> e : report.getOverusedAppsMinutes().entrySet()) {
-            overuseList.getItems().add(e.getKey() + " — " + e.getValue() + " min");
+            OveruseCategory cat = report.getCategory(e.getKey());
+            overuseList.getItems().add(e.getKey() + " — " + e.getValue() + " min (" + cat + ")");
         }
         if (overuseHint != null) overuseHint.setText("Overuse is based on your Settings thresholds.");
     }
