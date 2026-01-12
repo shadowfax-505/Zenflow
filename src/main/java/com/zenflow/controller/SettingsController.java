@@ -48,12 +48,6 @@ public class SettingsController {
         }
     }
 
-    @FXML
-    public void onReloadFocusMinutes() {
-        loadFocusDuration();
-        focusStatus.setText("Reloaded focus duration");
-    }
-
     private void loadFocusDuration() {
         String value = config.get("focus_minutes");
         if (value != null && !value.isBlank()) {
@@ -93,12 +87,6 @@ public class SettingsController {
         } catch (Exception ex) {
             overuseStatus.setText("Enter positive integers.");
         }
-    }
-
-    @FXML
-    public void onReloadOveruseThresholds() {
-        loadOveruseThresholds();
-        overuseStatus.setText("Reloaded thresholds");
     }
 
     private void loadOveruseThresholds() {

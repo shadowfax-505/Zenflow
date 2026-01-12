@@ -121,4 +121,29 @@ public class AnalyticsService {
         } catch (SQLException e) { throw new RuntimeException(e); }
         return out;
     }
+
+    /**
+     * Returns minutes used today for every app seen today (process_name or window_title).
+     */
+    public Map<String, Integer> getAllAppsMinutesToday() {
+        long startOfDay = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        String sql = "SELECT COALESCE(process_name, window_title) AS app, SUM(end_ts - start_ts) as ms_sum " +
+                "FROM window_usage WHERE start_ts >= ? GROUP BY app ORDER BY ms_sum DESC";
+        Map<String, Integer> out = new LinkedHashMap<>();
+        try (Connection c = DBHelper.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setLong(1, startOfDay);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String app = rs.getString("app");
+                    long ms = rs.getLong("ms_sum");
+                    int minutes = (int) (ms / 60000);
+                    if (minutes <= 0) continue;
+                    out.put(app == null ? "(unknown)" : app, minutes);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return out;
+    }
 }

@@ -31,5 +31,13 @@
 
             <PieChart fx:id="appPieChart" prefHeight="300" prefWidth="300" />
         </HBox>
+
+        <Separator />
+
+        <VBox alignment="CENTER" spacing="8">
+            <Label text="Overuse (apps used too much today)" style="-fx-font-weight: bold;" />
+            <ListView fx:id="overuseList" prefWidth="720" prefHeight="140" />
+            <Label fx:id="overuseHint" style="-fx-text-fill: gray; -fx-font-size: 11px;" text="Limits are configured in Settings." />
+        </VBox>
     </children>
 </VBox>

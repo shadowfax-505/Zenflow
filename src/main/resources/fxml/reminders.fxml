@@ -14,7 +14,6 @@
     <HBox spacing="12" alignment="CENTER">
         <Label text="Select date:" />
         <DatePicker fx:id="datePicker" />
-        <Button text="Reload" onAction="#onReload" />
     </HBox>
 
     <ListView fx:id="remindersList" prefWidth="720" prefHeight="260" />
@@ -27,4 +26,3 @@
 
     <Label fx:id="statusLabel" textFill="green" />
 </VBox>
-

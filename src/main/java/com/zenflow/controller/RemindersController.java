@@ -30,12 +30,6 @@ public class RemindersController {
     }
 
     @FXML
-    public void onReload() {
-        loadForSelectedDate();
-        statusLabel.setText("Reloaded");
-    }
-
-    @FXML
     public void onAdd() {
         String day = getSelectedDay();
         String text = reminderText.getText() == null ? "" : reminderText.getText().trim();
@@ -93,4 +87,3 @@ public class RemindersController {
         return DAY_FMT.format(d);
     }
 }
-
