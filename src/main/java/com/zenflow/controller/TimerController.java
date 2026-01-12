@@ -3,6 +3,7 @@ package com.zenflow.controller;
 import com.zenflow.dao.SessionDAO;
 import com.zenflow.db.DBHelper;
 import com.zenflow.model.Session;
+import com.zenflow.service.AppEventBus;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -35,24 +36,50 @@ public class TimerController {
     private Integer currentSessionId = null;
     private final SessionDAO sessionDAO = new SessionDAO();
 
+    private final AppEventBus.Listener configListener = (key, newValue) -> {
+        if (!"focus_minutes".equals(key)) return;
+        applyConfiguredDuration(newValue);
+    };
+
     @FXML
     public void initialize() {
-        loadConfiguredDuration();
+        applyConfiguredDuration(loadConfiguredMinutesValue());
         updateUI();
+        AppEventBus.subscribe(configListener);
     }
 
-    private void loadConfiguredDuration() {
+    private String loadConfiguredMinutesValue() {
         try (Connection c = DBHelper.getConnection();
              PreparedStatement ps = c.prepareStatement("SELECT value FROM app_config WHERE key='focus_minutes'");
              ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                int minutes = Integer.parseInt(rs.getString("value"));
-                if (minutes > 0) {
-                    durationSeconds = minutes * 60L;
-                    remainingSeconds = durationSeconds;
-                }
-            }
+            if (rs.next()) return rs.getString("value");
         } catch (Exception ignored) { }
+        return null;
+    }
+
+    private void applyConfiguredDuration(String minutesValue) {
+        Integer minutes = null;
+        try {
+            if (minutesValue != null && !minutesValue.isBlank()) {
+                minutes = Integer.parseInt(minutesValue.trim());
+            }
+        } catch (NumberFormatException ignored) {
+        }
+        if (minutes == null || minutes <= 0) minutes = 25;
+
+        final long newDurationSeconds = minutes * 60L;
+
+        Platform.runLater(() -> {
+            durationSeconds = newDurationSeconds;
+            // If not actively running, update the remaining time immediately.
+            // If running, keep remainingSeconds as-is so we don't surprise the user mid-focus.
+            if (!running) {
+                remainingSeconds = durationSeconds;
+                sessionStartTs = -1;
+                currentSessionId = null;
+            }
+            updateUI();
+        });
     }
 
     @FXML
@@ -87,7 +114,6 @@ public class TimerController {
 
         long endTs = Instant.now().toEpochMilli();
         if (currentSessionId != null) {
-            long elapsed = durationSeconds - remainingSeconds;
             boolean completed = remainingSeconds == 0;
             sessionDAO.endSession(currentSessionId, endTs, completed ? 1 : 0);
         }

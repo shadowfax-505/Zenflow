@@ -62,27 +62,8 @@ public class AdminController {
 
     @FXML
     private void deleteUser() {
-        String selected = usersList.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            statusLabel.setText("Select a user to delete.");
-            return;
-        }
-        if ("admin".equals(selected)) {
-            statusLabel.setText("Cannot delete default admin user.");
-            return;
-        }
-
-        boolean ok = ConfirmDialog.show("Delete user", "Are you sure you want to delete user '" + selected + "'? This cannot be undone.");
-        if (!ok) {
-            statusLabel.setText("Deletion cancelled.");
-            return;
-        }
-        if (userService.removeUser(selected)) {
-            statusLabel.setText("User deleted: " + selected);
-            refreshList();
-        } else {
-            statusLabel.setText("Failed to delete user.");
-        }
+        // Safety: Delete action removed from UI; prevent accidental invocation.
+        statusLabel.setText("Delete user is disabled.");
     }
 
     @FXML

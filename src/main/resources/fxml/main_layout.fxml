@@ -8,6 +8,7 @@
             <Button text="Dashboard" onAction="#showDashboard"/>
             <Button text="History" onAction="#showHistory"/>
             <Button text="Settings" onAction="#showSettings"/>
+            <Button text="Reminders" onAction="#showReminders"/>
             <Region fx:id="spacer" HBox.hgrow="ALWAYS"/>
             <Label text="ZenFlow" style="-fx-font-weight:bold;"/>
         </ToolBar>

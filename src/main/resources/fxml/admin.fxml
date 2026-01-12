@@ -19,7 +19,6 @@
             <PasswordField fx:id="changePassField" promptText="new password"/>
             <HBox spacing="8">
                 <Button text="Change Password" onAction="#changePassword"/>
-                <Button text="Delete User" onAction="#deleteUser"/>
             </HBox>
             <CheckBox fx:id="adminCheckbox" text="Is admin" onAction="#toggleAdmin" />
         </VBox>

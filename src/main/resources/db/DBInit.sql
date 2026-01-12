@@ -21,11 +21,6 @@ CREATE TABLE IF NOT EXISTS window_usage (
                                             window_title TEXT
 );
 
-CREATE TABLE IF NOT EXISTS distraction_list (
-                                                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                                keyword TEXT NOT NULL UNIQUE
-);
-
 CREATE TABLE IF NOT EXISTS events (
                                       id INTEGER PRIMARY KEY AUTOINCREMENT,
                                       ts INTEGER NOT NULL,
@@ -33,5 +28,13 @@ CREATE TABLE IF NOT EXISTS events (
                                       description TEXT
 );
 
+CREATE TABLE IF NOT EXISTS reminders (
+                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                         day TEXT NOT NULL,          -- yyyy-MM-dd
+                                         text TEXT NOT NULL,
+                                         created_ts INTEGER NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_sessions_start ON sessions(start_ts);
 CREATE INDEX IF NOT EXISTS idx_window_start ON window_usage(start_ts);
+CREATE INDEX IF NOT EXISTS idx_reminders_day ON reminders(day);

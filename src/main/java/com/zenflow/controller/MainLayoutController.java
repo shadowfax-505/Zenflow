@@ -11,7 +11,7 @@ public class MainLayoutController {
 
     @FXML private StackPane contentPane;
 
-    private Node timerNode, dashboardNode, historyNode, settingsNode;
+    private Node timerNode, dashboardNode, historyNode, settingsNode, remindersNode;
     private DashboardController dashboardController;
 
     @FXML
@@ -25,6 +25,7 @@ public class MainLayoutController {
 
             historyNode = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/fxml/history.fxml")));
             settingsNode = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/fxml/settings.fxml")));
+            remindersNode = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/fxml/reminders.fxml")));
 
             showNode(timerNode);
         } catch (Exception ex) {
@@ -50,4 +51,5 @@ public class MainLayoutController {
 
     @FXML public void showHistory() { showNode(historyNode); }
     @FXML public void showSettings() { showNode(settingsNode); }
+    @FXML public void showReminders() { showNode(remindersNode); }
 }

@@ -1,54 +1,28 @@
 package com.zenflow.controller;
 
-import com.zenflow.db.DBHelper;
-import com.zenflow.platform.MacActiveWindowProvider;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import com.zenflow.service.AppConfigService;
+import com.zenflow.service.AppEventBus;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 
 public class SettingsController {
 
     @FXML private TextField focusField;
     @FXML private Label focusStatus;
-    @FXML private ComboBox<String> whitelistCombo;
-    @FXML private Label whitelistStatus;
 
-    private final ObservableList<String> whitelistItems = FXCollections.observableArrayList();
-    private final MacActiveWindowProvider windowProvider = new MacActiveWindowProvider();
+    @FXML private TextField overuseSocialField;
+    @FXML private TextField overuseEntertainmentField;
+    @FXML private TextField overuseProductivityField;
+    @FXML private TextField overuseOtherField;
+    @FXML private Label overuseStatus;
+
+    private final AppConfigService config = new AppConfigService();
 
     @FXML
     public void initialize() {
-        loadWhitelist();
-        loadRecentAppsForWhitelist();
         loadFocusDuration();
-    }
-
-    @FXML
-    public void onSaveWhitelist() {
-        String value = whitelistCombo.getEditor().getText() == null ? "" : whitelistCombo.getEditor().getText().trim();
-        if (saveConfig("whitelist_app", value)) {
-            whitelistStatus.setText("Saved whitelist: " + (value.isEmpty() ? "(none)" : value));
-            if (!value.isEmpty() && !whitelistItems.contains(value)) {
-                whitelistItems.add(0, value);
-                whitelistCombo.setItems(whitelistItems);
-            }
-        } else {
-            whitelistStatus.setText("Failed to save whitelist");
-        }
-    }
-
-    @FXML
-    public void onRefreshWhitelistList() {
-        loadRecentAppsForWhitelist();
-        whitelistStatus.setText("Refreshed recent apps");
+        loadOveruseThresholds();
     }
 
     @FXML
@@ -57,8 +31,18 @@ public class SettingsController {
         try {
             int minutes = Integer.parseInt(txt);
             if (minutes <= 0) throw new NumberFormatException();
-            boolean ok = saveConfig("focus_minutes", String.valueOf(minutes));
+
+            String current = config.get("focus_minutes");
+            if (current != null && current.trim().equals(String.valueOf(minutes))) {
+                focusStatus.setText("No change (already " + minutes + " min)");
+                return;
+            }
+
+            boolean ok = config.set("focus_minutes", String.valueOf(minutes));
             focusStatus.setText(ok ? "Focus duration saved: " + minutes + " min" : "Failed to save focus duration");
+            if (ok) {
+                AppEventBus.publishConfigChanged("focus_minutes", String.valueOf(minutes));
+            }
         } catch (NumberFormatException ex) {
             focusStatus.setText("Enter a positive integer");
         }
@@ -70,87 +54,66 @@ public class SettingsController {
         focusStatus.setText("Reloaded focus duration");
     }
 
-    private void loadWhitelist() {
-        String value = loadConfig("whitelist_app");
-        if (value != null) {
-            whitelistCombo.getEditor().setText(value);
-            whitelistStatus.setText(value.isEmpty() ? "No whitelist set" : "Saved whitelist: " + value);
-        }
-    }
-
-    private void loadRecentAppsForWhitelist() {
-        whitelistItems.clear();
-        Set<String> seen = new LinkedHashSet<>();
-
-        String current = loadConfig("whitelist_app");
-        if (current != null && !current.isBlank()) {
-            seen.add(current);
-        }
-
-
-        for (int i = 0; i < 3; i++) {
-            windowProvider.getActiveWindowInfo().ifPresent(info -> {
-                String proc = info.split("\\|", 2)[0];
-                if (!proc.isBlank()) seen.add(proc);
-            });
-        }
-
-
-        String sql = "SELECT DISTINCT process_name FROM window_usage WHERE process_name IS NOT NULL ORDER BY id DESC LIMIT 15";
-        try (Connection c = DBHelper.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                String proc = rs.getString("process_name");
-                if (proc != null && !proc.isBlank()) seen.add(proc);
-            }
-        } catch (SQLException ignored) { }
-
-        whitelistItems.addAll(seen);
-        whitelistCombo.setItems(whitelistItems);
-    }
-
     private void loadFocusDuration() {
-        String value = loadConfig("focus_minutes");
-        if (value != null) {
+        String value = config.get("focus_minutes");
+        if (value != null && !value.isBlank()) {
             focusField.setText(value);
             focusStatus.setText("Focus duration: " + value + " min");
-        }
-    }
-
-    private boolean saveConfig(String key, String value) {
-        String sql = "INSERT INTO app_config(key, value) VALUES(?, ?) " +
-                "ON CONFLICT(key) DO UPDATE SET value=excluded.value";
-        try (Connection c = DBHelper.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
-            ps.setString(1, key);
-            ps.setString(2, value);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            return false;
-        }
-    }
-
-    private String loadConfig(String key) {
-        String sql = "SELECT value FROM app_config WHERE key = ?";
-        try (Connection c = DBHelper.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
-            ps.setString(1, key);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getString("value");
+        } else {
+            if (focusField.getText() == null || focusField.getText().isBlank()) {
+                focusField.setText("25");
             }
-        } catch (SQLException e) {
-
+            focusStatus.setText("Focus duration: " + focusField.getText() + " min");
         }
-        return null;
     }
 
     @FXML
-    public void onRemoveWhitelist() {
-        String current = loadConfig("whitelist_app");
-        boolean ok = saveConfig("whitelist_app", "");
-        if (ok) {
-            whitelistCombo.getEditor().clear();
-            whitelistItems.remove(current);
-            whitelistStatus.setText("Whitelist removed");
-        } else {
-            whitelistStatus.setText("Failed to remove whitelist");
+    public void onSaveOveruseThresholds() {
+        try {
+            int social = parsePositiveIntOrDefault(overuseSocialField.getText(), 60);
+            int ent = parsePositiveIntOrDefault(overuseEntertainmentField.getText(), 60);
+            int prod = parsePositiveIntOrDefault(overuseProductivityField.getText(), 180);
+            int other = parsePositiveIntOrDefault(overuseOtherField.getText(), 120);
+
+            boolean ok = true;
+            ok &= config.set("overuse_social_minutes", String.valueOf(social));
+            ok &= config.set("overuse_entertainment_minutes", String.valueOf(ent));
+            ok &= config.set("overuse_productivity_minutes", String.valueOf(prod));
+            ok &= config.set("overuse_other_minutes", String.valueOf(other));
+
+            if (ok) {
+                overuseStatus.setText("Overuse thresholds saved.");
+                AppEventBus.publishConfigChanged("overuse_social_minutes", String.valueOf(social));
+                AppEventBus.publishConfigChanged("overuse_entertainment_minutes", String.valueOf(ent));
+                AppEventBus.publishConfigChanged("overuse_productivity_minutes", String.valueOf(prod));
+                AppEventBus.publishConfigChanged("overuse_other_minutes", String.valueOf(other));
+            } else {
+                overuseStatus.setText("Failed to save thresholds.");
+            }
+        } catch (Exception ex) {
+            overuseStatus.setText("Enter positive integers.");
         }
+    }
+
+    @FXML
+    public void onReloadOveruseThresholds() {
+        loadOveruseThresholds();
+        overuseStatus.setText("Reloaded thresholds");
+    }
+
+    private void loadOveruseThresholds() {
+        overuseSocialField.setText(String.valueOf(parsePositiveIntOrDefault(config.get("overuse_social_minutes"), 60)));
+        overuseEntertainmentField.setText(String.valueOf(parsePositiveIntOrDefault(config.get("overuse_entertainment_minutes"), 60)));
+        overuseProductivityField.setText(String.valueOf(parsePositiveIntOrDefault(config.get("overuse_productivity_minutes"), 180)));
+        overuseOtherField.setText(String.valueOf(parsePositiveIntOrDefault(config.get("overuse_other_minutes"), 120)));
+    }
+
+    private int parsePositiveIntOrDefault(String txt, int def) {
+        if (txt == null) return def;
+        String t = txt.trim();
+        if (t.isEmpty()) return def;
+        int v = Integer.parseInt(t);
+        if (v <= 0) return def;
+        return v;
     }
 }

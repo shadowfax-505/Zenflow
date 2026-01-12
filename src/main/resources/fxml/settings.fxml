@@ -11,18 +11,30 @@
             <Label text="Focus Duration (minutes):" />
             <TextField fx:id="focusField" prefWidth="60" text="25"/>
             <Button text="Save" onAction="#onSaveFocusMinutes" />
-            <Button text="Reload" onAction="#onReloadFocusMinutes" />
         </HBox>
         <Label fx:id="focusStatus" textFill="green" />
 
         <Separator />
+
+        <Label text="Overuse Thresholds (minutes per day)" style="-fx-font-weight: bold;" />
+
+        <GridPane hgap="10" vgap="8" alignment="CENTER">
+            <Label text="Social:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+            <TextField fx:id="overuseSocialField" prefWidth="70" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+
+            <Label text="Entertainment:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+            <TextField fx:id="overuseEntertainmentField" prefWidth="70" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+
+            <Label text="Productivity:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+            <TextField fx:id="overuseProductivityField" prefWidth="70" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+
+            <Label text="Other:" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+            <TextField fx:id="overuseOtherField" prefWidth="70" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+        </GridPane>
+
         <HBox spacing="10" alignment="CENTER">
-            <Label text="Whitelist app (choose or type):" />
-            <ComboBox fx:id="whitelistCombo" promptText="e.g. Code" prefWidth="220" editable="true" />
-            <Button text="Refresh" onAction="#onRefreshWhitelistList" />
-            <Button text="Save" onAction="#onSaveWhitelist" />
-            <Button text="Remove" onAction="#onRemoveWhitelist" />
+            <Button text="Save thresholds" onAction="#onSaveOveruseThresholds" />
         </HBox>
-        <Label fx:id="whitelistStatus" textFill="green" />
+        <Label fx:id="overuseStatus" textFill="green" />
     </children>
 </VBox>
